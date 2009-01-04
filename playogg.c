@@ -1,5 +1,5 @@
 /*
-playogg.c - Minimal Ogg Vorbis music player.
+playogg.c -- Minimal Ogg Vorbis music player.
 
 Copyright (C) 2008 Henri Häkkinen.
 
@@ -30,11 +30,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 **
 ** Called by the SDL background thread each time the audio buffer is ready
 ** to receive more data. The function decodes PCM samples from the Vorbis
-** audio stream and copies them to the buffer for playback. When
+** audio stream and copies them to the buffer for playback. When an
 ** end-of-file is reached, closes the audio stream and exits cleanly.
 */
 static void
-stream_callback (void *userdata, Uint8 *buffer, int len)
+stream_callback (void *userdata, Uint8 *buffer, int length)
 {
   OggVorbis_File *vorbis_file = (OggVorbis_File *) userdata;
 
@@ -43,13 +43,13 @@ stream_callback (void *userdata, Uint8 *buffer, int len)
      whole buffer in a single call. We don't have to worry about the
      logical section switches inside the stream. */
 
-  while (len > 0) {
+  while (length > 0) {
     int section;
     long bytes_read;
 
     /* Decode a chunk of PCM samples to the audio buffer. Uses signed
        16-bit stereo little-endian samples. */
-    bytes_read = ov_read (vorbis_file, buffer, len, 0, 2, 1, &section);
+    bytes_read = ov_read (vorbis_file, buffer, length, 0, 2, 1, &section);
 
     if (bytes_read < 0) {
       fprintf (stderr, "playogg: error while streaming\n");
@@ -62,7 +62,7 @@ stream_callback (void *userdata, Uint8 *buffer, int len)
     }
 
     buffer += bytes_read;
-    len -= bytes_read;
+    length -= bytes_read;
   }
 }
 
@@ -80,13 +80,13 @@ main (int argc, char **argv)
 
   /* Initialize the SDL audio subsystem. */
   if (SDL_Init (SDL_INIT_AUDIO) < 0) {
-    fprintf (stderr, "playogg: cannot initialize SDL: %s\n", SDL_GetError ());
+    fprintf (stderr, "playogg: cannot initialize SDL audio: %s\n", SDL_GetError ());
     return 1;
   }
 
   /* Open the Ogg Vorbis file. */
   if (ov_fopen (argv[1], &vorbis_file) < 0) {
-    fprintf (stderr, "playogg: cannot open the Ogg Vorbis stream %s\n", argv[1]);
+    fprintf (stderr, "playogg: cannot open Ogg Vorbis stream %s\n", argv[1]);
     return 1;
   }
   
@@ -99,11 +99,11 @@ main (int argc, char **argv)
   spec.userdata = (void *) &vorbis_file;
 
   if (SDL_OpenAudio (&spec, NULL) < 0) {
-    fprintf (stderr, "playogg: cannot open the audio device: %s\n", SDL_GetError ());
+    fprintf (stderr, "playogg: cannot open audio device: %s\n", SDL_GetError ());
     return 1;
   }
 
-  /* Play audio and engage a infinite loop. */
+  /* Start playing audio and engage an infinite loop. */
   SDL_PauseAudio (0);
   puts ("Streaming audio... Press Ctrl-C to exit.");
   for (;;) SDL_Delay (100000);
