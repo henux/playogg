@@ -1,0 +1,8 @@
+playogg README
+
+Copyright (C) 2008 Henri Häkkinen.
+
+`playogg` is a minimal Ogg Vorbis music player which does just that --
+plays music.  It uses SDL for the audio backend and libvorbisfile for Ogg
+Vorbis decoding.  Enjoy!
+
